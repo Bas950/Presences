@@ -269,10 +269,10 @@ const // official website
 		play: "play",
 		read: "reading",
 		search: "search",
-		write: "writing"
+		write: "writing",
 	},
 	presenceData: PresenceData = {
-		largeImageKey: PRESENCE_ART_ASSETS.logo
+		largeImageKey: PRESENCE_ART_ASSETS.logo,
 	};
 
 let ApiClient: ApiClient,
@@ -294,7 +294,7 @@ function mediaPrimaryImage(mediaId: string): string {
  * handleAudioPlayback - handles the presence when the audio player is active
  */
 async function handleAudioPlayback(): Promise<void> {
-	const [audioElem] = document.getElementsByTagName("audio"),
+	const [audioElem] = document.querySelectorAll("audio"),
 		regexResult = /\/Audio\/(\w+)\/universal/.exec(audioElem.src);
 
 	if (!regexResult) {
@@ -415,8 +415,8 @@ async function obtainMediaInfo(itemId: string): Promise<MediaInfo> {
 						`Device="${ApiClient._deviceName}",` +
 						`DeviceId="${ApiClient._deviceId}",` +
 						`Version="${ApiClient._appVersion}",` +
-						`Token="${ApiClient._serverInfo.AccessToken}"`
-				}
+						`Token="${ApiClient._serverInfo.AccessToken}"`,
+				},
 			}
 		),
 		mediaInfo: MediaInfo = await res.json();
@@ -451,8 +451,8 @@ async function searchMedia(searchTerm: string): Promise<MediaInfo[]> {
 						`Device="${ApiClient._deviceName}",` +
 						`DeviceId="${ApiClient._deviceId}",` +
 						`Version="${ApiClient._appVersion}",` +
-						`Token="${ApiClient._serverInfo.AccessToken}"`
-				}
+						`Token="${ApiClient._serverInfo.AccessToken}"`,
+				},
 			}
 		),
 		resJson = await res.json();
@@ -466,12 +466,12 @@ async function searchMedia(searchTerm: string): Promise<MediaInfo[]> {
  * handleVideoPlayback - handles the presence when the user is using the video player
  */
 async function handleVideoPlayback(): Promise<void> {
-	if (!document.getElementById("videoOsdPage")) {
+	if (!document.querySelector("#videoOsdPage")) {
 		// elements not loaded yet
 		return;
 	}
 
-	const videoPlayerElem = document.getElementsByTagName(
+	const videoPlayerElem = document.querySelectorAll(
 		"video"
 	)[0] as HTMLVideoElement;
 
@@ -480,7 +480,7 @@ async function handleVideoPlayback(): Promise<void> {
 
 	// title on the header
 	const headerTitle =
-			document.querySelector<HTMLHeadingElement>("h3.pageTitle").innerText,
+			document.querySelector<HTMLHeadingElement>("h3.pageTitle").textContent,
 		[mediaInfo] = await searchMedia(headerTitle);
 
 	let largeImage = PRESENCE_ART_ASSETS.logo;
@@ -636,7 +636,7 @@ async function loggedIn(): Promise<void> {
  * handleWebClient - handle the presence while the user is in the web client
  */
 async function handleWebClient(): Promise<void> {
-	const audioElems = document.body.getElementsByTagName("audio");
+	const audioElems = document.body.querySelectorAll("audio");
 
 	// audio player active
 	if (
@@ -787,10 +787,13 @@ async function refreshApiClient(): Promise<void> {
 async function isJellyfinWebClient(): Promise<boolean> {
 	if (!ApiClient) await refreshApiClient();
 
-	if (ApiClient && typeof ApiClient === "object") {
-		if (ApiClient._appName && ApiClient._appName === "Jellyfin Web")
-			return true;
-	}
+	if (
+		ApiClient &&
+		typeof ApiClient === "object" &&
+		ApiClient._appName &&
+		ApiClient._appName === "Jellyfin Web"
+	)
+		return true;
 
 	return false;
 }
@@ -862,7 +865,7 @@ async function init(): Promise<void> {
 
 	if (validPage) {
 		presence = new Presence({
-			clientId: "669359568391766018"
+			clientId: "669359568391766018",
 		});
 
 		presence.info(infoMessage);

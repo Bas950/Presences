@@ -1,5 +1,5 @@
 const presence = new Presence({
-		clientId: "827910536049852488"
+		clientId: "827910536049852488",
 	}),
 	browsingTimestamp = Math.floor(Date.now() / 1000);
 let search: HTMLInputElement, title: HTMLElement;
@@ -7,7 +7,7 @@ let search: HTMLInputElement, title: HTMLElement;
 presence.on("UpdateData", async () => {
 	const presenceData: PresenceData = {
 			largeImageKey: "logo",
-			startTimestamp: browsingTimestamp
+			startTimestamp: browsingTimestamp,
 		},
 		page = window.location.pathname;
 	if (page === "/") {
@@ -29,7 +29,7 @@ presence.on("UpdateData", async () => {
 			presenceData.details = "Viewing Category:";
 			presenceData.state = title.textContent;
 			presenceData.buttons = [
-				{ label: "View Category", url: window.location.href }
+				{ label: "View Category", url: window.location.href },
 			];
 		}
 	} else if (page === "/community") presenceData.details = "Viewing the forums";
@@ -43,20 +43,20 @@ presence.on("UpdateData", async () => {
 		presenceData.details = "Reading Forum Thread:";
 		presenceData.state = title.textContent;
 		presenceData.buttons = [
-			{ label: "View Thread", url: window.location.href }
+			{ label: "View Thread", url: window.location.href },
 		];
 	} else if (page.includes("/friends/")) {
 		title = document.querySelector("#main > h2");
 		if (title.textContent === "Your Friends") {
 			presenceData.details = "Viewing their friends";
 			presenceData.buttons = [
-				{ label: "View Friends", url: window.location.href }
+				{ label: "View Friends", url: window.location.href },
 			];
 		} else {
 			presenceData.details = "Viewing the friends of:";
 			presenceData.state = title.textContent;
 			presenceData.buttons = [
-				{ label: "View Friends", url: window.location.href }
+				{ label: "View Friends", url: window.location.href },
 			];
 		}
 	} else if (page.includes("/user/")) {
@@ -64,31 +64,55 @@ presence.on("UpdateData", async () => {
 		presenceData.details = "Viewing the profile of:";
 		presenceData.state = title.textContent;
 		presenceData.buttons = [
-			{ label: "View Profile", url: window.location.href }
+			{ label: "View Profile", url: window.location.href },
 		];
 	} else if (page.includes("/author/")) {
 		title = document.querySelector("#categorylisting > h2 > a");
 		presenceData.details = "Viewing Games Made By:";
 		presenceData.state = title.textContent;
 		presenceData.buttons = [
-			{ label: "View Profile", url: window.location.href }
+			{ label: "View Profile", url: window.location.href },
 		];
 	} else if (page === "/register" || page === "/register/")
 		presenceData.details = "Registering";
 	else if (page.includes("/settings")) {
 		presenceData.details = "Viewing:";
-		if (page === "/settings/general") presenceData.state = "General Settings";
-		else if (page === "/settings/friends") presenceData.state = "Their Friends";
-		else if (page === "/settings/quests") presenceData.state = "Quests";
-		else if (page === "/settings/favs") presenceData.state = "Favs";
-		else if (page === "/settings/contact")
-			presenceData.state = "Contact Settings";
-		else if (page === "/settings/accounts")
-			presenceData.state = "Soicial Settings";
-		else if (page === "/settings/purchases")
-			presenceData.state = "My Purchases";
-		else if (page === "/settings/password")
-			presenceData.state = "Password Settings";
+		switch (page) {
+			case "/settings/general": {
+				presenceData.state = "General Settings";
+				break;
+			}
+			case "/settings/friends": {
+				presenceData.state = "Their Friends";
+				break;
+			}
+			case "/settings/quests": {
+				presenceData.state = "Quests";
+				break;
+			}
+			case "/settings/favs": {
+				presenceData.state = "Favs";
+				break;
+			}
+			case "/settings/contact": {
+				presenceData.state = "Contact Settings";
+				break;
+			}
+			case "/settings/accounts": {
+				presenceData.state = "Soicial Settings";
+				break;
+			}
+			case "/settings/purchases": {
+				presenceData.state = "My Purchases";
+				break;
+			}
+			case "/settings/password":
+				{
+					presenceData.state = "Password Settings";
+					// No default
+				}
+				break;
+		}
 	} else if (page.includes("/games/")) {
 		title = document.querySelector(
 			"#content-canvas > section.game-header.clearfix > h1"
@@ -96,7 +120,7 @@ presence.on("UpdateData", async () => {
 		presenceData.details = "Browsing:";
 		presenceData.state = "All Games";
 		presenceData.buttons = [
-			{ label: "Browse Games", url: window.location.href }
+			{ label: "Browse Games", url: window.location.href },
 		];
 	} else if (page.includes("game")) {
 		title = document.querySelector(

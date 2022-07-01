@@ -1,10 +1,10 @@
 const presence = new Presence({
-		clientId: "802964241179082822"
+		clientId: "802964241179082822",
 	}),
-	nextEpisodeElement = document.querySelector(
+	nextEpisodeElement = document.querySelector<HTMLDivElement>(
 		"div#sidebar-anime-info > div.border.rounded.mb-3.p-3:nth-child(2) > div:nth-child(1) > a.ka-url-wrapper"
 	),
-	previousEpisodeElement = document.querySelector(
+	previousEpisodeElement = document.querySelector<HTMLDivElement>(
 		"div#sidebar-anime-info > div.border.rounded.mb-3.p-3:nth-child(2) > div:nth-child(2) > a.ka-url-wrapper"
 	);
 
@@ -15,7 +15,7 @@ async function getStrings() {
 			pause: "general.paused",
 			viewSeries: "general.buttonViewSeries",
 			viewMovie: "general.buttonViewMovie",
-			watchEpisode: "general.buttonViewEpisode"
+			watchEpisode: "general.buttonViewEpisode",
 		},
 		await presence.getSetting<string>("lang").catch(() => "en")
 	);
@@ -25,7 +25,7 @@ let browsingTimestamp = Math.floor(Date.now() / 1000),
 	video = {
 		duration: 0,
 		currentTime: 0,
-		paused: true
+		paused: true,
 	},
 	currentTime: number,
 	duration: number,
@@ -91,15 +91,15 @@ presence.on(
 presence.on("UpdateData", async () => {
 	const presenceData: PresenceData = {
 			largeImageKey: "kaa",
-			startTimestamp: browsingTimestamp
+			startTimestamp: browsingTimestamp,
 		},
 		[buttons, newLang, cover] = await Promise.all([
 			presence.getSetting<boolean>("buttons"),
 			presence.getSetting<string>("lang"),
-			presence.getSetting<boolean>("cover")
+			presence.getSetting<boolean>("cover"),
 		]);
 
-	if (oldLang !== newLang || strings) {
+	if (oldLang !== newLang) {
 		oldLang = newLang;
 		strings = await getStrings();
 	}
@@ -111,13 +111,13 @@ presence.on("UpdateData", async () => {
 		checkIfMovie();
 		if (playback && !isNaN(duration)) {
 			presenceData.smallImageKey = paused ? "pause" : "play";
-			presenceData.smallImageText = paused
-				? (await strings).pause
-				: (await strings).play;
+			presenceData.smallImageText = paused ? strings.pause : strings.play;
 			[presenceData.startTimestamp, presenceData.endTimestamp] =
 				presence.getTimestamps(Math.floor(currentTime), Math.floor(duration));
 			currentAnimeTitle =
-				document.querySelector("a.ka-url-wrapper").textContent;
+				document.querySelector<HTMLAnchorElement>(
+					"a.ka-url-wrapper"
+				).textContent;
 			[, currentAnimeEpisode] = document.location.pathname
 				.split("/")[3]
 				.split("-");
@@ -131,19 +131,19 @@ presence.on("UpdateData", async () => {
 				if (buttons) {
 					presenceData.buttons = [
 						{
-							label: (await strings).watchEpisode,
-							url: document.URL
+							label: strings.watchEpisode,
+							url: document.URL,
 						},
 						{
-							label: (await strings).viewSeries,
-							url: document.URL.replace(document.URL.split("/")[5], "")
-						}
+							label: strings.viewSeries,
+							url: document.URL.replace(document.URL.split("/")[5], ""),
+						},
 					];
 				}
 
 				presenceData.largeImageKey = cover
 					? document
-							.querySelector<HTMLElement>("div.info-header")
+							.querySelector<HTMLDivElement>("div.info-header")
 							.style.backgroundImage.match(/"(.*)"/)[1]
 					: "kaa";
 			} else {
@@ -152,13 +152,13 @@ presence.on("UpdateData", async () => {
 				if (buttons) {
 					presenceData.buttons = [
 						{
-							label: (await strings).watchEpisode,
-							url: document.URL
+							label: strings.watchEpisode,
+							url: document.URL,
 						},
 						{
-							label: (await strings).viewMovie,
-							url: document.URL.replace(document.URL.split("/")[5], "")
-						}
+							label: strings.viewMovie,
+							url: document.URL.replace(document.URL.split("/")[5], ""),
+						},
 					];
 				}
 			}
@@ -172,7 +172,9 @@ presence.on("UpdateData", async () => {
 			}
 		} else {
 			currentAnimeTitle =
-				document.querySelector("a.ka-url-wrapper").textContent;
+				document.querySelector<HTMLAnchorElement>(
+					"a.ka-url-wrapper"
+				).textContent;
 			[, currentAnimeEpisode] = document.location.pathname
 				.split("/")[3]
 				.split("-");
@@ -186,13 +188,13 @@ presence.on("UpdateData", async () => {
 				if (buttons) {
 					presenceData.buttons = [
 						{
-							label: (await strings).watchEpisode,
-							url: document.URL
+							label: strings.watchEpisode,
+							url: document.URL,
 						},
 						{
-							label: (await strings).viewSeries,
-							url: document.URL.replace(document.URL.split("/")[5], "")
-						}
+							label: strings.viewSeries,
+							url: document.URL.replace(document.URL.split("/")[5], ""),
+						},
 					];
 				}
 			} else {
@@ -201,13 +203,13 @@ presence.on("UpdateData", async () => {
 				if (buttons) {
 					presenceData.buttons = [
 						{
-							label: (await strings).watchEpisode,
-							url: document.URL
+							label: strings.watchEpisode,
+							url: document.URL,
 						},
 						{
-							label: (await strings).viewMovie,
-							url: document.URL.replace(document.URL.split("/")[5], "")
-						}
+							label: strings.viewMovie,
+							url: document.URL.replace(document.URL.split("/")[5], ""),
+						},
 					];
 				}
 			}
@@ -224,7 +226,8 @@ presence.on("UpdateData", async () => {
 		document.location.pathname.includes("/anime/") &&
 		document.location.pathname.includes("/episode") === false
 	) {
-		currentAnimeTitle = document.querySelector("h1.title").textContent;
+		currentAnimeTitle =
+			document.querySelector<HTMLHeadingElement>("h1.title").textContent;
 		presenceData.details = "Looking at:";
 		presenceData.state = `${currentAnimeTitle}`;
 		presenceData.smallImageKey = "searching";
@@ -237,9 +240,9 @@ presence.on("UpdateData", async () => {
 		if (buttons) {
 			presenceData.buttons = [
 				{
-					label: (await strings).viewSeries,
-					url: document.URL
-				}
+					label: strings.viewSeries,
+					url: document.URL,
+				},
 			];
 		}
 	} else if (document.location.pathname.includes("anime-list")) {

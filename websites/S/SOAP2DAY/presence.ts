@@ -1,23 +1,23 @@
 const presence = new Presence({
-		clientId: "828549761376059441"
+		clientId: "828549761376059441",
 	}),
+	{ href } = window.location,
 	getAction = (): string => {
-		if (window.location.href.indexOf("movielist") !== -1) return "movielist";
-		else if (window.location.href.indexOf("sportlist") !== -1)
-			return "sportlist";
-		else if (window.location.href.indexOf("tvlist") !== -1) return "tvlist";
-		else if (window.location.href.indexOf("Tczo") !== -1) return "tvshow";
-		else if (window.location.href.indexOf("Mczo") !== -1) return "movie";
-		else if (window.location.href.indexOf("Sczo") !== -1) return "sport";
-		else if (window.location.href.indexOf("faq") !== -1) return "faq";
-		else if (window.location.href.indexOf("Eczo") !== -1) return "tv";
+		if (href.includes("movielist")) return "movielist";
+		else if (href.includes("sportlist")) return "sportlist";
+		else if (href.includes("tvlist")) return "tvlist";
+		else if (href.includes("Tczo")) return "tvshow";
+		else if (href.includes("Mczo")) return "movie";
+		else if (href.includes("Sczo")) return "sport";
+		else if (href.includes("faq")) return "faq";
+		else if (href.includes("Eczo")) return "tv";
 		else return "home";
 	},
 	getText = (text: string): string => {
-		return document.getElementsByClassName(text)[0].textContent.trim();
+		return document.querySelector(text).textContent.trim();
 	},
 	getStatus = (): string => {
-		const element = document.getElementById("t3").textContent.trim();
+		const element = document.querySelector("#t3").textContent.trim();
 		if (element === "") return "Loading";
 		else return element;
 	},
@@ -30,7 +30,7 @@ const presence = new Presence({
 		sport: "Enjoying some sports",
 		home: "Checking out the home page",
 		faq: "Reading the FAQ",
-		tv: "Relaxing to some TV"
+		tv: "Relaxing to some TV",
 	};
 let pauseFlag = true,
 	watchStamp = 0;
@@ -38,7 +38,7 @@ let pauseFlag = true,
 presence.on("UpdateData", async () => {
 	let presenceData: PresenceData = {
 		largeImageKey: "icon",
-		details: constructAction[getAction()]
+		details: constructAction[getAction()],
 	};
 	// If the user is watching something, get the title and set duration.
 	if (["movie", "tv", "sport"].includes(getAction())) {
@@ -47,20 +47,20 @@ presence.on("UpdateData", async () => {
 
 		if (pauseFlag) {
 			[, watchStamp] = presence.getTimestampsfromMedia(
-				document.getElementsByTagName("video")[0]
+				document.querySelector("video")
 			);
 			if (!isNaN(watchStamp)) pauseFlag = true;
 			presenceData = {
-				state: `${getStatus()} | ${getText("player-title-bar")}`,
+				state: `${getStatus()} | ${getText("[class~=player-title-bar]")}`,
 				endTimestamp: watchStamp,
 				smallImageKey: "play",
-				...presenceData
+				...presenceData,
 			};
 		} else {
 			presenceData = {
-				state: `${getStatus()} | ${getText("player-title-bar")}`,
+				state: `${getStatus()} | ${getText("[class~=player-title-bar]")}`,
 				smallImageKey: "pause",
-				...presenceData
+				...presenceData,
 			};
 		}
 		pauseFlag = true;
@@ -68,7 +68,7 @@ presence.on("UpdateData", async () => {
 		// If the user is not watching something, return how long they have been browsing.
 		presenceData = {
 			startTimestamp: Math.floor(Date.now() / 1000),
-			...presenceData
+			...presenceData,
 		};
 	}
 

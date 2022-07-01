@@ -1,5 +1,5 @@
 const presence = new Presence({
-	clientId: "609774216430092298"
+	clientId: "609774216430092298",
 });
 
 let beatmapTitle: string,
@@ -16,7 +16,7 @@ let beatmapTitle: string,
 
 presence.on("UpdateData", async () => {
 	const presenceData: PresenceData = {
-		largeImageKey: "logo"
+		largeImageKey: "logo",
 	};
 
 	if (document.location.pathname === "/home") {
@@ -83,7 +83,7 @@ presence.on("UpdateData", async () => {
 		presenceData.state = "The osu! Store";
 		presenceData.smallImageKey = "searching";
 	} else if (document.location.pathname.startsWith("/rankings")) {
-		[, , gamemode] = document.location.pathname.split("/");
+		gamemode = document.location.pathname.split("/")[2];
 		if (document.location.pathname.includes("/performance")) {
 			if (
 				document.querySelector("div.u-ellipsis-overflow").textContent !== "All"

@@ -1,5 +1,5 @@
 const presence = new Presence({
-		clientId: "850759953718575224"
+		clientId: "850759953718575224",
 	}),
 	browsingTimestamp = Math.floor(Date.now() / 1000);
 let currentURL = new URL(document.location.href),
@@ -7,7 +7,7 @@ let currentURL = new URL(document.location.href),
 	presenceData: PresenceData = {
 		details: "Viewing an unsupported page",
 		largeImageKey: "lg",
-		startTimestamp: browsingTimestamp
+		startTimestamp: browsingTimestamp,
 	};
 const updateCallback = {
 		_function: null as () => void,
@@ -19,7 +19,7 @@ const updateCallback = {
 		},
 		get present(): boolean {
 			return this._function !== null;
-		}
+		},
 	},
 	/**
 	 * Initialize/reset presenceData.
@@ -28,7 +28,7 @@ const updateCallback = {
 		defaultData: PresenceData = {
 			details: "Viewing an unsupported page",
 			largeImageKey: "lg",
-			startTimestamp: browsingTimestamp
+			startTimestamp: browsingTimestamp,
 		}
 	): void => {
 		currentURL = new URL(document.location.href);
@@ -53,10 +53,22 @@ const updateCallback = {
 
 		*/
 
-			if (currentPath[0] === "") presenceData.details = "On the index page";
-			else if (currentPath[0] === "signin") presenceData.details = "Signing in";
-			else if (currentPath[0] === "register")
-				presenceData.details = "Registering an account";
+			switch (currentPath[0]) {
+				case "": {
+					presenceData.details = "On the index page";
+					break;
+				}
+				case "signin": {
+					presenceData.details = "Signing in";
+					break;
+				}
+				case "register":
+					{
+						presenceData.details = "Registering an account";
+						// No default
+					}
+					break;
+			}
 		} else if (currentPath.includes("wiki")) {
 			/*
 
@@ -78,7 +90,7 @@ const updateCallback = {
 				actionResult = (): string =>
 					getURLParam("action") || getURLParam("veaction") || mwConfig.wgAction,
 				titleFromURL = (): string => {
-					return decodeURIComponent(mwConfig.wgPageName.replace(/_/g, " "));
+					return decodeURIComponent(mwConfig.wgPageName.replaceAll("_", " "));
 				},
 				title = document.querySelector("h1")
 					? document.querySelector("h1").textContent.trim()
@@ -133,10 +145,10 @@ const updateCallback = {
 							2302: "Viewing a gadget definition page",
 							2303: "Viewing a gadget definition talk page",
 							Portal: "Viewing a portal",
-							"Portal talk": "Viewing a portal talk page"
+							"Portal talk": "Viewing a portal talk page",
 						},
-						canonicalNamespace = mwConfig.wgCanonicalNamespace.replace(
-							/_/g,
+						canonicalNamespace = mwConfig.wgCanonicalNamespace.replaceAll(
+							"_",
 							" "
 						);
 					return (

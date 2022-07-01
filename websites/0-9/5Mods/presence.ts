@@ -1,5 +1,5 @@
 const presence = new Presence({
-		clientId: "651412198727352331"
+		clientId: "651412198727352331",
 	}),
 	categories: Record<string, string> = {
 		tools: "Tools",
@@ -9,20 +9,20 @@ const presence = new Presence({
 		scripts: "Scripts",
 		player: "Player",
 		maps: "Maps",
-		misc: "Misc"
+		misc: "Misc",
 	};
 
 presence.on("UpdateData", async () => {
 	const presenceData: PresenceData = {
-		largeImageKey: "lg"
+		largeImageKey: "lg",
 	};
 	if (document.location.pathname === "/")
 		presenceData.details = "Viewing the front page...";
 	else if (categories[document.location.pathname.split("/")[1]]) {
-		if (document.getElementsByClassName("btn-download")[0]) {
+		if (document.querySelectorAll(".btn-download")[0]) {
 			presenceData.details = "Viewing a Mod...";
 			let name =
-				document.getElementsByClassName("clearfix")[1].children[0].textContent;
+				document.querySelectorAll(".clearfix")[1].children[0].textContent;
 			if (name.length > 60) name = `${name.slice(0, 57)}...`;
 			presenceData.state = `${name} (${
 				categories[document.location.pathname.split("/")[1]]

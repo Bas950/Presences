@@ -1,10 +1,10 @@
 const presence = new Presence({
-		clientId: "804448815942860821"
+		clientId: "804448815942860821",
 	}),
 	strings = presence.getStrings({
 		play: "presence.playback.playing",
 		pause: "presence.playback.paused",
-		browsing: "presence.activity.browsing"
+		browsing: "presence.activity.browsing",
 	});
 
 let iFrameVideo: boolean,
@@ -31,7 +31,7 @@ presence.on(
 
 presence.on("UpdateData", async () => {
 	const presenceData: PresenceData = {
-		largeImageKey: "logo"
+		largeImageKey: "logo",
 	};
 
 	if (
@@ -39,16 +39,19 @@ presence.on("UpdateData", async () => {
 		document.location.pathname.includes("/episodio")
 	) {
 		const titulo = document.querySelector("h1.Title").textContent,
-			subtitulo = document.querySelector("h2.SubTitle").textContent;
+			subtitulo = document.querySelector("h2.SubTitle").textContent,
+			cover = document
+				.querySelector("div.backdrop > article > div.Image > figure > img")
+				.getAttribute("data-src");
 
 		if (!document.location.pathname.includes("/episodio")) {
 			presenceData.details = titulo;
-			subtitulo === titulo
-				? delete presenceData.state
-				: (presenceData.state = subtitulo);
+			if (subtitulo === titulo) delete presenceData.state;
+			else presenceData.state = subtitulo;
 			presenceData.buttons = [
-				{ label: "Ver Película", url: window.location.href }
+				{ label: "Ver Película", url: window.location.href },
 			];
+			presenceData.largeImageKey = cover;
 		} else {
 			presenceData.details = titulo
 				.replace(document.querySelector("h1.Title > span").textContent, "")
@@ -58,8 +61,9 @@ presence.on("UpdateData", async () => {
 				document.querySelector("h1.Title > span").textContent
 			} ${subtitulo}`;
 			presenceData.buttons = [
-				{ label: "Ver Episodio", url: window.location.href }
+				{ label: "Ver Episodio", url: window.location.href },
 			];
+			presenceData.largeImageKey = cover;
 		}
 
 		if (iFrameVideo) {
@@ -81,6 +85,9 @@ presence.on("UpdateData", async () => {
 		presenceData.details = document.querySelector("h1.Title").textContent;
 		presenceData.smallImageKey = "browsing";
 		presenceData.smallImageText = (await strings).browsing;
+		presenceData.largeImageKey = document
+			.querySelector("div.backdrop > article > div.Image > figure > img")
+			.getAttribute("data-src");
 	} else {
 		presenceData.details = (await strings).browsing;
 		presenceData.smallImageKey = "browsing";

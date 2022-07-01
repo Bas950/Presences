@@ -6,6 +6,7 @@ import { blue, green, red, yellow } from "chalk";
 import ParseJSON, { ObjectNode } from "json-to-ast";
 import { validate } from "jsonschema";
 import { compare, diff } from "semver";
+import { createAnnotation, getChangedFolders } from "../util";
 
 const latestMetadataSchema = async (): Promise<string[]> => {
 		const versions = (
@@ -19,20 +20,20 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 			.map(c => c.name.match(/\d.\d/g)[0]);
 		return [
 			`https://schemas.premid.app/metadata/${versions.at(-1)}`,
-			versions.at(-1)
+			versions.at(-1),
 		];
 	},
 	stats = {
 		validated: 0,
 		validatedWithWarnings: 0,
-		failedToValidate: 0
+		failedToValidate: 0,
 	},
 	versionBumpErrors = {
 		invalidVerNew: () => 'The version of a new presence must start at "1.0.0"',
 		versionNotBumped: (oldVersion: string, newVersion: string) =>
 			`The current version (${newVersion}) of the presence has not been bumped. The latest published version is ${oldVersion}`,
 		badVersionBump: (oldVersion: string, newVersion: string) =>
-			`The current version (${newVersion}) of the presence was incorrectly bumped. The latest published version is ${oldVersion}.`
+			`The current version (${newVersion}) of the presence was incorrectly bumped. The latest published version is ${oldVersion}.`,
 	},
 	isValidVersionBump = (newVer: string, oldVer?: string) => {
 		if (!oldVer) {
@@ -91,40 +92,18 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 		} catch {
 			return [null];
 		}
-	},
-	createAnnotation = (params: CreateAnnotationParams): string => {
-		const input = [];
-
-		for (const [key, value] of Object.entries(params)) {
-			if (["type", "message"].includes(key)) continue;
-			else input.push(`${key}=${value}`);
-		}
-
-		return `::${params.type} ${input.join(",")}::${params.message}`;
-	},
-	changedMetaFiles = [
-		...new Set(
-			readFileSync("./file_changes.txt", "utf-8")
-				.trim()
-				.split("\n")
-				.filter(file =>
-					["metadata.json", "presence.ts", "iframe.ts"].some(x =>
-						file.endsWith(x)
-					)
-				)
-				.map(file => {
-					const path = file.split("/");
-
-					path.at(-1) === "metadata.json"
-						? path.splice(path.length - 2, 2)
-						: path.pop();
-
-					return `${path.join("/")}/dist/metadata.json`;
-				})
-		)
-	];
+	};
 
 (async (): Promise<void> => {
+	console.log(blue("Getting changed files..."));
+
+	const changedMetaFiles = await getChangedFolders().then(f =>
+		f
+			//TODO: Add support for programs in the future
+			.filter(p => p.includes("websites/"))
+			.map(p => (p += "/dist/metadata.json"))
+	);
+
 	console.log(blue("Getting latest schema..."));
 
 	const [latestSchema, latestSchemaVersion] = await latestMetadataSchema(),
@@ -144,8 +123,8 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 					type: "error",
 					file: metaFile,
 					title: "Invalid JSON",
-					message: "Unable to parse the JSON file"
-				})
+					message: "Unable to parse the JSON file",
+				}),
 			]);
 			continue;
 		}
@@ -163,7 +142,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
               langFiles(project: "presence") {
                 lang
               }
-            }`
+            }`,
 				})
 			).data.data,
 			validLangs = langFiles.map(l => l.lang),
@@ -190,7 +169,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 						file: metaFile,
 						line: getLine("$schema"),
 						title: "instance.$schema",
-						message: `Using out of date schema, the latest version is ${latestSchemaVersion}`
+						message: `Using out of date schema, the latest version is ${latestSchemaVersion}`,
 					})
 				);
 			} else validated(service);
@@ -204,7 +183,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 						file: metaFile,
 						line: getLine("version"),
 						title: "instance.version",
-						message: versionBumpErrors[versionCheck](oldVersion, newVersion)
+						message: versionBumpErrors[versionCheck](oldVersion, newVersion),
 					})
 				);
 			}
@@ -216,7 +195,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 						file: metaFile,
 						line: getLine("service"),
 						title: "instance.service",
-						message: "does not equal to the folder name"
+						message: "does not equal to the folder name",
 					})
 				);
 			}
@@ -232,14 +211,14 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 							file: metaFile,
 							line: getLine(property),
 							title: `instance.${property}`,
-							message: `${error.message} @ ${error.property}`
+							message: `${error.message} @ ${error.property}`,
 						})
 					);
 				} else {
-					const messsage = property.match(/\[([0-9]+)\]/);
+					const messsage = property.match(/(.*)\[([0-9]+)\]/);
 
 					if (messsage) {
-						const [propertyName, index] = messsage;
+						const [propertyName, index] = messsage.slice(1);
 
 						errors.push(
 							createAnnotation({
@@ -247,7 +226,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 								file: metaFile,
 								line: getLine(propertyName as key, parseInt(index)),
 								title: error.property,
-								message: `${error.message} @ ${error.property}`
+								message: `${error.message} @ ${error.property}`,
 							})
 						);
 					} else {
@@ -257,7 +236,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 								file: metaFile,
 								line: getLine(property),
 								title: error.property,
-								message: `${error.message} @ ${error.property}`
+								message: `${error.message} @ ${error.property}`,
 							})
 						);
 					}
@@ -271,7 +250,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 						file: metaFile,
 						line: getLine("description", invalidLang),
 						title: `instance.description.${invalidLang}`,
-						message: `${invalidLang}" is not a valid language or is a unsupported language`
+						message: `"${invalidLang}" is not a valid language or is a unsupported language`,
 					})
 				);
 			}
@@ -282,7 +261,7 @@ const latestMetadataSchema = async (): Promise<string[]> => {
 		function getLine(line: key, value?: string | number) {
 			const AST = ParseJSON(rawMeta, {
 				loc: true,
-				source: metaFile
+				source: metaFile,
 			}) as ObjectNode;
 
 			if (value) {
@@ -355,15 +334,4 @@ interface APIQuery {
 			}
 		];
 	};
-}
-
-interface CreateAnnotationParams {
-	type: "warning" | "error" | "notice";
-	title?: string;
-	file: string;
-	line?: string | number;
-	endLine?: string | number;
-	col?: string | number;
-	endColumn?: string | number;
-	message: string;
 }
